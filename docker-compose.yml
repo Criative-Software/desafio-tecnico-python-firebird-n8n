@@ -11,5 +11,4 @@ services:
     volumes:
       - ./firebird_data:/firebird/data
       - ./employee.fbk:/firebird/employee.fbk
-
     restart: unless-stopped
