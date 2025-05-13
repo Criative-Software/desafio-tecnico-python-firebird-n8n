@@ -1,0 +1,99 @@
+{
+  "name": "WorkFlow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "export-csv",
+        "options": {
+          "binaryPropertyName": "data"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -60,
+        0
+      ],
+      "id": "d2f7e1c7-33dc-422f-bb09-230bb0869fff",
+      "name": "Webhook",
+      "webhookId": "04add174-4ae6-410c-b742-1a21b3be6406"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const jsonData = $json.body;\nconst headers = Object.keys(jsonData[0]);\nlet csvString = headers.join(\",\") + \"\\n\";\n\njsonData.forEach(row => {\n    let values = headers.map(header => row[header]);\n    csvString += values.join(\",\") + \"\\n\";\n});\n\nreturn { csv: csvString };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        0
+      ],
+      "id": "e27ec75b-e9f0-42d9-ac71-370c46c53990",
+      "name": "Function"
+    },
+    {
+      "parameters": {
+        "fromEmail": "gabrielanselmo29@gmail.com",
+        "toEmail": "processo@empresa.com",
+        "subject": "Envio de dados ao Firebird",
+        "emailFormat": "text",
+        "text": "=Os dados foram analisados e enviados ao Firebird!",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        340,
+        0
+      ],
+      "id": "24541183-69a9-47fb-9bdd-794e6c843e33",
+      "name": "Send Email",
+      "webhookId": "ab0b1745-f963-4708-bdba-0f7147054cdb",
+      "notesInFlow": false,
+      "credentials": {
+        "smtp": {
+          "id": "vojZR1cKqvELktlE",
+          "name": "SMTP account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Function",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Function": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6924c0b8-a568-4d8d-837b-89d139a5b79c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3e02f525a4925f1c3af54d5190638c14de4a40d71dc129ff75d735c2ba14e02b"
+  },
+  "id": "75ToVPGB89fQIn80",
+  "tags": []
+}
