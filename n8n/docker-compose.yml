@@ -15,3 +15,15 @@ services:
       - GENERIC_TIMEZONE=America/Sao_Paulo
     volumes:
       - ./n8n_data:/home/node/.n8n
+
+  firebird:
+    image: jacobalberty/firebird:2.5-ss
+    container_name: firebird25
+    ports:
+      - "3050:3050"
+    environment:
+      - ISC_PASSWORD=masterkey
+    volumes:
+      - ./firebird_data:/firebird/data
+      - ./employee.fbk:/firebird/employee.fbk
+    restart: unless-stopped
