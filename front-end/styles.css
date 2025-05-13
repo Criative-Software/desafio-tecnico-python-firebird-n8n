@@ -1,0 +1,44 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+input {
+    margin: 5px;
+    padding: 8px;
+}
+
+button {
+    padding: 10px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+table {
+    width: 50%;
+    margin: 20px auto;
+    border-collapse: collapse;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+}
+
+th {
+    background-color: #007BFF;
+    color: white;
+}
+
+.insights-text-container {
+    max-width: 600px;          /* Limita a largura do container */
+    margin: 20px auto;         /* Centraliza horizontalmente e adiciona margem vertical */
+    padding: 15px;             /* Espaçamento interno */
+    text-align: center;        /* Centraliza o texto */
+    border: 1px solid #ccc;    /* Opcional: borda para visualização */
+    border-radius: 5px;        /* Opcional: cantos arredondados */
+    background-color: #f9f9f9; /* Opcional: cor de fundo para destacar */
+}
+
