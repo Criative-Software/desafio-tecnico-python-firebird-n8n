@@ -22,7 +22,7 @@ Este diretório contém a automação do fluxo usando o n8n.
    - O fluxo do n8n:
      1. Recebe o CSV via webhook.
      2. Passa o CSV para um node Function que converte para JSON.
-     3. Envia um e-mail para `empresa@processo.com` com os dados.
+     3. Envia um e-mail para `processo@empresa.com` com os dados.
 
 4. **Gerenciamento do fluxo:**
    - O fluxo está salvo em `WorkFlow.json`.
