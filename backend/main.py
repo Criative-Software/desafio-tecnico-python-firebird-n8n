@@ -131,13 +131,13 @@ def main():
             """
 
         results_sales = execute_query(cursor, query_sales)
-        sales_file = 'backend/files/vendas_por_mes.csv'
+        sales_file = 'backend/files/vendas_mes.csv'
         save_to_csv(sales_file, results_sales, ['MES', 'QTD'])
         create_chart(sales_file, 'Vendas Por Mês')
         print(f"Arquivo CSV e gráfico de vendas por mês gerados com sucesso.")
             
         results_employees = execute_query(cursor, query_employees)
-        employees_file = 'backend/files/total_por_vendedor.csv'
+        employees_file = 'backend/files/total_vendedor.csv'
         save_to_csv(employees_file, results_employees, ['NOME_VENDEDOR', 'TOTAL'])
         create_chart(employees_file, 'Total Por Vendedor')
         print(f"Arquivo CSV e gráfico de total por vendedor gerados com sucesso.")
