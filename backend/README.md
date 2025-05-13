@@ -80,11 +80,11 @@ python main.py
 ```
 .
 ├── backend/
-│   ├── README.md            # instruções do desafio back‑end
+│   ├── README.md            # este arquivo
 │   ├── requirements.txt     # dependências do desafio
 │   └── main.py              # script Python
 └── .gitignore
 ├── docker.compose.yml       # configuração Firebird
 ├── employee.fbk             # arquivo disponibilizado para a realização do teste
-└── README.md                # este arquivo
+└── README.md                # instruções para os desafios
 ```
