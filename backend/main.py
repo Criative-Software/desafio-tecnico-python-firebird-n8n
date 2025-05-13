@@ -1,10 +1,16 @@
 import fdb
 import csv
+import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
+import pandas as pd
+import seaborn as sns
 from pathlib import Path
 
 def create_dir():
     """Cria diretórios para armazenar arquivos de saída se não existirem."""
     Path("backend/files").mkdir(parents=True, exist_ok=True)
+    Path("backend/charts").mkdir(parents=True, exist_ok=True)
+
 
 def db_connection():
     """
@@ -28,7 +34,7 @@ def db_connection():
         return con, cur
     except fdb.Error as e:
         raise ConnectionError(f"Erro ao conectar ao banco de dados: {str(e)}")
-    
+
 def execute_query(cursor, query):
     """
     Executa uma consulta SQL no banco de dados.
@@ -62,13 +68,47 @@ def save_to_csv(file_path, results, headers):
             writer.writerows(results)
     except IOError as e:
         raise IOError(f"Erro ao salvar arquivo CSV: {str(e)}")
+
+def create_chart(csv_path, title):
+    """
+    Cria um gráfico de barras baseado nos dados do arquivo CSV.
     
+    Args:
+        csv_path: Caminho do arquivo CSV com os dados
+        title: Título do gráfico
+    """
+    try:
+        df = pd.read_csv(csv_path)
+        col_x, col_y = df.columns.values
+
+        plt.figure(figsize=(10, 6))
+        sns.barplot(data=df, x=col_x, y=col_y, palette="viridis", estimator=sum)
+        
+        plt.title(f'{title.replace("_", " ").title()}', fontsize=14)
+        plt.xlabel(col_x.replace("_", " ").title(), fontsize=12)
+        plt.ylabel(col_y.replace("_", " ").title(), fontsize=12)
+
+        if 'TOTAL' in col_y:
+            def currency_formatter(x, pos):
+                return f'R$ {x:,.2f}'
+            plt.gca().yaxis.set_major_formatter(FuncFormatter(currency_formatter))
+
+        plt.tight_layout()
+        
+        img_path = csv_path.replace('.csv', '.png').replace('files', 'charts')
+        plt.savefig(img_path)
+        plt.close()
+
+        return img_path
+    except Exception as e:
+        raise RuntimeError(f"Erro ao criar gráfico: {str(e)}")
+        
 def main():
     """Função principal do programa."""
     create_dir()
-    conn, cursor = db_connection()    
-
+    conn, cursor = db_connection()      
     try:
+
         query_sales = """
                 SELECT 
                     EXTRACT(MONTH FROM ORDER_DATE) AS MES,
@@ -93,12 +133,15 @@ def main():
         results_sales = execute_query(cursor, query_sales)
         sales_file = 'backend/files/vendas_por_mes.csv'
         save_to_csv(sales_file, results_sales, ['MES', 'QTD'])
-    
+        create_chart(sales_file, 'Vendas Por Mês')
+        print(f"Arquivo CSV e gráfico de vendas por mês gerados com sucesso.")
+            
         results_employees = execute_query(cursor, query_employees)
         employees_file = 'backend/files/total_por_vendedor.csv'
         save_to_csv(employees_file, results_employees, ['NOME_VENDEDOR', 'TOTAL'])
+        create_chart(employees_file, 'Total Por Vendedor')
+        print(f"Arquivo CSV e gráfico de total por vendedor gerados com sucesso.")
             
-
     except Exception as e:
         print(f"Erro durante a execução: {str(e)}")
 
