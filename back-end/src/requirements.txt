@@ -1,0 +1,4 @@
+fdb
+pandas
+matplotlib
+flask
