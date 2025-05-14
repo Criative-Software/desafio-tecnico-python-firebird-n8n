@@ -1,0 +1,6 @@
+pandas
+matplotlib
+fdb
+python-dotenv
+streamlit
+openpyxl
