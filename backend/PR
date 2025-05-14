@@ -1,0 +1,67 @@
+Tempo gasto em cada etapa:
+Configuração do Backend: 3 horas
+
+Integração com Banco de Dados (Firebird): 2 horas
+
+Desenvolvimento do Webhook (n8n): 4 horas
+
+Desenvolvimento do Frontend (HTML/JS): 6 horas
+
+Teste e Depuração: 4 horas
+
+🛠️ Principais desafios enfrentados:
+Integração com o Firebird:
+
+A configuração inicial do banco foi um pouco desafiadora devido à falta de documentação clara sobre a conexão com Firebird no Python.
+
+Para resolver isso, fiz ajustes na configuração do SQLAlchemy e tive que garantir que os drivers corretos estivessem instalados.
+
+Desenvolvimento do Webhook (n8n):
+
+Foi um desafio integrar corretamente o Webhook no n8n com a comunicação entre o frontend, backend e n8n.
+
+A maior dificuldade foi a configuração das variáveis de ambiente e a correta geração dos dados do webhook no n8n.
+
+Frontend (HTML/JS):
+
+O frontend exigia uma implementação simples com HTML e JavaScript para interagir com o backend e gerar uma tabela de resultados.
+
+Enfrentei alguns problemas ao tentar configurar o envio correto dos dados JSON e garantir que o botão de "Exportar Excel" estivesse funcionando.
+
+O que faria diferente com mais tempo:
+Melhorar a Interface do Frontend:
+
+Se tivesse mais tempo, teria dedicado mais esforços na parte visual e na usabilidade, talvez utilizando um framework de frontend como React ou Vue.js, para maior interação.
+
+Automatização dos Testes:
+
+Com mais tempo, teria automatizado os testes do backend e do frontend, criando testes unitários e de integração para garantir maior estabilidade.
+
+Melhor Documentação:
+
+Eu teria investido mais tempo documentando cada etapa do processo, incluindo como configurar o ambiente local, como rodar o backend e frontend, e como configurar o n8n para produção.
+
+Desempenho:
+
+Caso o projeto fosse escalado, poderia otimizar as consultas SQL e melhorar o desempenho do backend, possivelmente implementando cache para evitar consultas repetidas.
+
+Instruções para rodar:
+Backend:
+
+Certifique-se de ter o ambiente Python configurado corretamente. Use o comando:
+
+comandos:
+pip install -r requirements.txt
+Para iniciar o servidor Flask:
+
+Comandos:
+python app.py
+Frontend:
+
+O frontend está configurado para ser uma aplicação estática. Basta abrir o arquivo index.html no navegador.
+
+n8n:
+
+Configure o webhook dentro do n8n com a URL fornecida.
+
+Teste a integração do n8n com o backend usando o método de envio de dados JSON.
