@@ -1,0 +1,15 @@
+services:
+  firebird:
+    image: jacobalberty/firebird:2.5.9-sc
+    restart: always
+    container_name: desafio_tecnico_firebird
+    environment:
+      FIREBIRD_USER: sysdba
+      ISC_PASSWORD: masterkey
+    ports:
+      - "3051:3050"
+    volumes:
+      - ./data:/firebird/data
+
+volumes:
+  firebird-data:
