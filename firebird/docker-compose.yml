@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  firebird:
+    image: jacobalberty/firebird:2.5.9-sc
+    container_name: firebird25
+    environment:
+      ISC_PASSWORD: masterkey
+    ports:
+      - "3050:3050"
+    volumes:
+      - ../employee.fbk:/firebird/employee.fbk
+      - ./data:/firebird/data
