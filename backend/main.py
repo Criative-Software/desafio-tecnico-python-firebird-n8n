@@ -9,6 +9,7 @@ Por fim, com base nesses dados, é gerado um gráfico de barras — representand
 
 import fdb
 import pandas as pd
+import matplotlib.pyplot as plt
 from datetime import datetime
 import os
 from dotenv import load_dotenv
@@ -129,6 +130,58 @@ class FirebirdDatabase:
             print(f"Erro ao consultar vendas por vendedor: {erro}")
             return None
 
+    def gerar_grafico_vendas_por_mes(self, df: pd.DataFrame) -> None:
+        """
+        Gera um gráfico de barras para as vendas por mês e salva como PNG.
+
+        Args:
+            df (pd.DataFrame): DataFrame contendo os dados de vendas por mês.
+        """
+        try:
+            plt.figure(figsize=(12, 6))
+            plt.bar(df['MES'], df['TOTAL_VENDAS'])
+            plt.title('Vendas por Mês')
+            plt.xlabel('Mês')
+            plt.ylabel('Total de Vendas')
+            plt.xticks(rotation=45)
+            plt.tight_layout()
+
+            # Gerar nome do arquivo com timestamp
+            data_hora = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            nome_arquivo = f"grafico_vendas_por_mes_{data_hora}.png"
+            
+            plt.savefig(nome_arquivo)
+            plt.close()
+            print(f"Gráfico salvo como '{nome_arquivo}'")
+        except Exception as erro:
+            print(f"Erro ao gerar gráfico de vendas por mês: {erro}")
+
+    def gerar_grafico_vendas_por_vendedor(self, df: pd.DataFrame) -> None:
+        """
+        Gera um gráfico de barras para as vendas por vendedor e salva como PNG.
+
+        Args:
+            df (pd.DataFrame): DataFrame contendo os dados de vendas por vendedor.
+        """
+        try:
+            plt.figure(figsize=(12, 6))
+            plt.bar(df['COD_VENDEDOR'], df['TOTAL_VENDAS'])
+            plt.title('Vendas por Vendedor')
+            plt.xlabel('Código do Vendedor')
+            plt.ylabel('Total de Vendas')
+            plt.xticks(rotation=45)
+            plt.tight_layout()
+
+            # Gerar nome do arquivo com timestamp
+            data_hora = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            nome_arquivo = f"grafico_vendas_por_vendedor_{data_hora}.png"
+            
+            plt.savefig(nome_arquivo)
+            plt.close()
+            print(f"Gráfico salvo como '{nome_arquivo}'")
+        except Exception as erro:
+            print(f"Erro ao gerar gráfico de vendas por vendedor: {erro}")
+
 
 def main() -> None:
     """Função principal que executa as operações do módulo."""
@@ -136,8 +189,15 @@ def main() -> None:
     
     if db.conectar():
         try:
-            db.consultar_vendas_por_mes()
-            db.consultar_vendas_por_vendedor()
+            # Consultar e gerar gráfico de vendas por mês
+            df_vendas_mes = db.consultar_vendas_por_mes()
+            if df_vendas_mes is not None:
+                db.gerar_grafico_vendas_por_mes(df_vendas_mes)
+
+            # Consultar e gerar gráfico de vendas por vendedor
+            df_vendas_vendedor = db.consultar_vendas_por_vendedor()
+            if df_vendas_vendedor is not None:
+                db.gerar_grafico_vendas_por_vendedor(df_vendas_vendedor)
         finally:
             db.fechar_conexao()
 
