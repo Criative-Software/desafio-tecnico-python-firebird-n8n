@@ -1,2 +1,14 @@
 .idea
 .vscode
+
+venv/
+
+n8n/n8n_data/
+firebird/data/
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+
