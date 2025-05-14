@@ -1,0 +1,163 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "upload-csv",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "14340c6d-34a3-433e-9fb1-2a4333c9b8fd",
+      "webhookId": "3cbbb5f3-d117-4733-a8b0-a9040d1ad9d2"
+    },
+    {
+      "parameters": {
+        "functionCode": "const body = $json.body;\n\nif (!body) {\n  throw new Error(\"O corpo da requisição está vazio.\");\n}\n\nconst linhas = body.trim().split('\\n');\nconst cabecalhos = linhas.shift().split(';');\n\nreturn linhas.map(linha => {\n  const valores = linha.split(';');\n  let item = {};\n  cabecalhos.forEach((coluna, i) => {\n    item[coluna.trim()] = valores[i]?.trim() || '';\n  });\n  return { json: item };\n});"
+      },
+      "name": "Parse CSV (Body)",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        240,
+        0
+      ],
+      "id": "c76021fc-6deb-4578-b91a-7f0701dda67a"
+    },
+    {
+      "parameters": {
+        "functionCode": "const mes = parseInt($json.mes);\nconst ano = parseInt($json.ano);\nconst total = parseFloat($json.total);\n\nreturn $input.all().map(item => {\n  const mes = parseInt(item.json.mes);\n  const ano = parseInt(item.json.ano);\n  const total = parseFloat(item.json.total);\n\n  return {\n    json: {\n      command: `INSERT INTO csv_import (mes, ano, total) VALUES (${mes}, ${ano}, ${total});`\n    }\n  };\n});\n"
+      },
+      "name": "Gerar SQL",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        460,
+        0
+      ],
+      "id": "1702f86d-538b-4f9e-8590-752515e4ba8f"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:5001/insert",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "sql",
+              "value": "={{ $json.command }}"
+            }
+          ]
+        },
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 10,
+              "batchInterval": 100
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        0
+      ],
+      "id": "f639a81a-447b-4a0b-96e2-48d516cfdde2",
+      "name": "HTTP Request",
+      "alwaysOutputData": true,
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "fromEmail": "noreply@mailtrap.com",
+        "toEmail": "processo@empresa.com",
+        "subject": "=Confirmação de Importação",
+        "emailFormat": "text",
+        "text": "Todos os dados foram importados com sucesso.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        880,
+        0
+      ],
+      "id": "2590fadf-d225-40e5-96e3-10efa96eba4d",
+      "name": "Send Email",
+      "webhookId": "f272530d-b875-4cfb-9529-76fb68764588",
+      "credentials": {
+        "smtp": {
+          "id": "zV5U8c4abAiet25m",
+          "name": "SMTP account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Parse CSV (Body)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse CSV (Body)": {
+      "main": [
+        [
+          {
+            "node": "Gerar SQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gerar SQL": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1255df0e-7a24-4aa1-ac8c-afeb2069d4b3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "51595eee2dc67af15a4df7994ba33845f076d0e7e5125cc236b8a10a20348ccf"
+  },
+  "id": "zrVQyoEOHGie96rJ",
+  "tags": []
+}
