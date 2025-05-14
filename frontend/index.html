@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Consulta de Vendas</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
+      background-color: #f5f5f5;
+    }
+    h1 {
+      text-align: center;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    select, button {
+      padding: 8px;
+      font-size: 16px;
+      margin-right: 10px;
+    }
+    table {
+      width: 50%;
+      margin-top: 20px;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Consulta de Vendas por Mês</h1>
+
+  <div class="form-group">
+    <label for="mes">Mês:</label>
+    <select id="mes">
+      <option value="1">Janeiro</option>
+      <option value="2">Fevereiro</option>
+      <option value="3">Março</option>
+      <option value="4">Abril</option>
+      <option value="5">Maio</option>
+      <option value="6">Junho</option>
+      <option value="7">Julho</option>
+      <option value="8">Agosto</option>
+      <option value="9">Setembro</option>
+      <option value="10">Outubro</option>
+      <option value="11">Novembro</option>
+      <option value="12">Dezembro</option>
+    </select>
+
+    <label for="ano">Ano:</label>
+    <select id="ano">
+      <option value="2023">2023</option>
+      <option value="2024" selected>2024</option>
+    </select>
+
+    <button onclick="buscarVendas()">Buscar</button>
+    <button onclick="exportarExcel()">Exportar Excel</button>
+  </div>
+
+  <table id="tabelaVendas" style="display: none;">
+    <thead>
+      <tr>
+        <th>Mês</th>
+        <th>Ano</th>
+        <th>Total de Vendas</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    function buscarVendas() {
+      const mes = document.getElementById('mes').value;
+      const ano = document.getElementById('ano').value;
+
+      fetch(`http://127.0.0.1:5000/vendas?mes=${mes}&ano=${ano}`)
+        .then(response => response.json())
+        .then(data => {
+          const tabela = document.getElementById('tabelaVendas');
+          const corpo = tabela.querySelector('tbody');
+          corpo.innerHTML = '';
+
+          if (data.length > 0) {
+            data.forEach(linha => {
+              const tr = document.createElement('tr');
+              tr.innerHTML = `<td>${linha.mes}</td><td>${linha.ano}</td><td>${linha.total_vendas}</td>`;
+              corpo.appendChild(tr);
+            });
+            tabela.style.display = 'table';
+          } else {
+            alert('Nenhum dado encontrado.');
+            tabela.style.display = 'none';
+          }
+        })
+        .catch(() => alert('Erro ao buscar dados'));
+    }
+
+    function exportarExcel() {
+      const mes = document.getElementById('mes').value;
+      const ano = document.getElementById('ano').value;
+      window.open(`http://127.0.0.1:5000/exportar?mes=${mes}&ano=${ano}`, '_blank');
+    }
+  </script>
+
+</body>
+</html>
