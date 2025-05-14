@@ -1,156 +1,183 @@
-# Desafio Técnico – Vaga Programador(a) Júnior
-
-Bem-vindo(a) ao desafio prático para a vaga **Programador(a) Júnior (Python + Firebird 2.5 + n8n + Front‑end)**.
-
-> ⚠️ **IMPORTANTE:** Este desafio foi estruturado para uso com a versão **Firebird 2.5**.  
-> O arquivo `employee.fbk` fornecido é um backup gerado nesta versão.  
-> Utilize um servidor Firebird 2.5 localmente ou via Docker para restaurá-lo corretamente antes de iniciar.
+Claro! Aqui está o README atualizado **sem a seção "Clone este repositório"**:
 
 ---
 
-## ✅ Como entregar
+# 🐦 Firebird Docker - Desafio Técnico
 
-1. Faça um **Fork** deste repositório na sua conta GitHub.
-2. Crie uma nova branch:  
-   `git checkout -b desafio/<seu-nome>`
-3. Siga as instruções de cada pasta e faça *commits* claros e objetivos.
-4. Ao finalizar, abra um **Pull Request** para a branch `main` **antes do prazo informado**.
+Este repositório contém um ambiente Docker configurado para rodar o **Firebird 2.5.9** usando a imagem `jacobalberty/firebird`. Ele é ideal para testes e desenvolvimento de sistemas que utilizam esse banco de dados.
 
----
+## 🔧 Requisitos
 
-## Estrutura esperada
+- [Docker](https://www.docker.com/)
+- [Docker Compose](https://docs.docker.com/compose/)
 
+## 🚀 Como usar
+
+1. **Suba o container:**
+
+   ```bash
+   docker-compose up -d
+   ```
+
+2. **Acesse o Firebird:**
+
+   - **Host:** `localhost`
+   - **Porta:** `3051`
+   - **Usuário:** `seu usario`
+   - **Senha:** `sua senha`
+
+3. **Volume de dados:**
+
+   Os dados do banco ficam persistidos na pasta `./data` do seu projeto.
+
+## 🔄 Restaurando um backup `.fbk`
+
+Se você possui um arquivo de backup do Firebird (`.fbk`), pode restaurá-lo dentro do container com o comando abaixo:
+
+```bash
+docker exec -it desafio_tecnico_firebird \
+  /usr/local/firebird/bin/gbak -c \
+  -user sysdba -password masterkey \
+  /firebird/data/employee.fbk \
+  /firebird/data/employee.fdb
 ```
-.
-├── backend/
-│   ├── README.md            # instruções do desafio back‑end
-│   ├── requirements.txt
-│   └── main.py              # seu script Python
-├── n8n/
-│   ├── workflow.json        # export do fluxo
-│   ├── docker-compose.yml   # ambiente n8n (opcional)
-│   └── prints/              # 3 imagens de execução
-├── frontend/
-│   ├── app.py               # Fique a vontade e opte pelo framework Python que se sentir confortável
-│   ├── index.html           # página estática
-│   └── README.md            # instruções front‑end
-└── README.md                # este arquivo
-└── employee.fbk             # arquivo disponibilizado para a realização do teste
+
+> 💡 Certifique-se de que o arquivo `employee.fbk` está dentro da pasta `./data` do projeto antes de executar o comando acima.
+
+## 📁 Estrutura
+
+```yaml
+services:
+  firebird:
+    image: jacobalberty/firebird:2.5.9-sc
+    restart: always
+    container_name: desafio_tecnico_firebird
+    environment:
+      FIREBIRD_USER: seu usario
+      ISC_PASSWORD: sua senha
+    ports:
+      - "3051:3050"
+    volumes:
+      - ./data:/firebird/data
+
+volumes:
+  firebird-data:
 ```
 
+## 🧼 Parar e remover o container
 
+```bash
+docker-compose down
+```
 
+Se quiser remover também os volumes persistentes:
 
----
+```bash
+docker-compose down -v
+```
 
-## 🔧 Desafio Back‑end (Python + Firebird 2.5)
-
-### 🎯 Objetivo
-Conectar ao banco Firebird, realizar consultas e gerar relatórios com visualização gráfica.
-
-### 🧩 Tarefas
-
-1. Crie um ambiente virtual:  
-   `python -m venv venv && source venv/bin/activate`
-2. Instale dependências:  
-   `pip install -r backend/requirements.txt`  
-   *(exemplos: `fdb`, `pandas`, `matplotlib`)*
-3. Implemente o `main.py` com:
-   - Conexão ao Firebird:  
-     `host=localhost`, `database=employee.fdb`, `user=sysdba`, `password=masterkey`
-   - Realize duas consultas SQL:
-     - `vendas_por_mes`
-     - `total_por_vendedor`
-   - Salve os resultados em arquivos `.csv`
-   - Gere um gráfico de barras `grafico.png`
-
-4. Documente a execução no `backend/README.md` com até **10 linhas**.
-
-### ✔️ Critérios de Avaliação
-
-| Peso | Item                           |
-| ---: | ------------------------------ |
-| 40 % | Roda sem erros, gera CSV + PNG |
-| 30 % | SQL correta e performática     |
-| 20 % | Código limpo (PEP‑8, funções)  |
-| 10 % | README objetivo                |
+Com certeza! Aqui está uma versão **resumida e amigável** para adicionar ao seu `README.md`, explicando o uso do script Python com base no código fornecido:
 
 ---
 
-## 🔄 Desafio n8n – Automação
+## 📊 Análise de Vendas com Python
 
-### 🎯 Objetivo
+Este projeto também inclui um script Python que se conecta ao banco Firebird, executa consultas e gera relatórios visuais.
 
-Montar um fluxo que receba um CSV via Webhook, insira os dados no Firebird e envie um e‑mail.
+### Funcionalidades:
 
-### 🧩 Tarefas
+- Consulta de **vendas por mês** e **por vendedor**
+- Exportação dos resultados para arquivos `.csv`
+- Geração de gráficos de barras salvos como `.png`
 
-1. Suba o ambiente n8n com `docker-compose.yml` (ou use n8n Cloud).
-2. Crie o fluxo com os seguintes passos:
-   1. **Webhook (POST)** – recebe o arquivo `vendas_mes.csv`
-   2. **Function** – transforma CSV em JSON
-   3. **Firebird** – insere os dados na tabela `csv_import`
-   4. **Email** – envia confirmação para `processo@empresa.com`
-3. Exporte o fluxo como `workflow.json`
-4. Adicione 3 capturas de tela em `n8n/prints/`:
-   - Fluxo completo
-   - Execução com sucesso
-   - E‑mail recebido
+### ▶️ Como usar
 
-### ✔️ Critérios de Avaliação
+1. Instale as dependências:
 
-| Peso | Item                               |
-| ---: | ---------------------------------- |
-| 40 % | Fluxo executa sem erro             |
-| 30 % | Uso correto dos nós                |
-| 20 % | Tratamento de exceções no Function |
-| 10 % | Organização dos arquivos           |
+   ```bash
+   pip install -r requirements.txt
+   ```
 
----
+2. Configure um arquivo `.env` com as variáveis de conexão:
 
-## 🌐 Desafio Front‑end
+   ```
+   DATABASE_URL=localhost:/firebird/data/employee.fdb
+   USER=sysdba
+   SECRET_KEY=masterkey
+   ```
 
-### 🎯 Objetivo
+3. Execute o script principal:
 
-Criar uma interface simples para consulta e exportação de vendas por mês.
+   ```bash
+   python nome_do_arquivo.py
+   ```
 
-### 🧩 Requisitos
-
-1. Campo de seleção **Mês/Ano**
-2. Botão **Buscar** → exibe resultados em uma tabela
-3. Botão **Exportar Excel** → salva como `.xlsx`
-4. Use qualquer stack Python que desejar (ex: Flask, Streamlit)
-5. Ou opte por uma solução estática com HTML + JavaScript
-
-> A aplicação deve rodar com:  
-> `python frontend/app.py`  
-> **OU**  
-> abrir diretamente o `index.html`
-
-### ✔️ Critérios de Avaliação
-
-| Peso | Item                       |
-| ---: | -------------------------- |
-| 30 % | Funciona (busca + exporta) |
-| 25 % | UX simples e limpa         |
-| 20 % | Organização de código      |
-| 15 % | Responsividade             |
-| 10 % | README claro               |
+Claro! Aqui está um README amigável e resumido para o seu projeto com a interface Streamlit:
 
 ---
 
-## 📬 Entrega do Pull Request
+# 📊 Sistema de Consulta de Vendas
 
-1. Verifique se cada pasta contém README com instruções claras.
-2. Remova quaisquer senhas ou dados sensíveis dos commits.
-3. Abra o Pull Request com o título:  
-   **`Desafio – <Seu Nome>`**
-4. No corpo do PR, inclua:
+Este projeto oferece uma **interface Streamlit** para consulta, visualização e exportação de dados de vendas armazenados em um banco Firebird. Ele permite que os usuários filtrem as vendas por mês e ano, visualizem as métricas principais e gerem gráficos e relatórios em formato Excel.
 
-   - **Tempo gasto em cada etapa**
-   - **Principais desafios enfrentados**
-   - **O que faria diferente com mais tempo**
+### Funcionalidades:
 
----
+- **Consulta de vendas por mês**: Obtenha os dados de vendas agrupados por mês.
+- **Exibição de métricas**: Mostra o total de vendas, pedidos e itens.
+- **Gráfico de vendas**: Geração de um gráfico de barras das vendas por mês.
+- **Exportação para Excel**: Exporte os dados para um arquivo Excel facilmente.
+- **Filtros interativos**: Selecione ano e mês para filtrar os dados na interface.
 
-Boa sorte! 💻🚀
+### 📋 Requisitos
+
+- [Python 3.7+](https://www.python.org/)
+- [Streamlit](https://streamlit.io/)
+- [Firebird](https://firebirdsql.org/) (conectado via `fdb`)
+
+### ⚙️ Como rodar o projeto
+
+1. **Instale as dependências**:
+
+   Execute o seguinte comando para instalar as dependências:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. **Configuração do Banco de Dados**:
+
+   Crie um arquivo `.env` com as variáveis de configuração para o banco de dados Firebird:
+
+   ```
+   DATABASE_URL=localhost:/caminho/para/seu/banco.fdb
+   USER=seu usario
+   SECRET_KEY=sua senha
+   ```
+
+3. **Execute o aplicativo Streamlit**:
+
+   Para rodar a interface, execute o comando:
+
+   ```bash
+   streamlit run app.py
+   ```
+
+4. **Interaja com a interface**:
+
+   - Selecione o **ano** e **mês** na barra lateral para filtrar os dados.
+   - Visualize as **métricas principais** (Total de Vendas, Total de Pedidos, Total de Itens).
+   - Exporte os dados filtrados para um arquivo Excel.
+   - Veja o **gráfico de vendas** gerado automaticamente.
+
+### 🔧 Funcionalidades da Interface:
+
+- **Filtros Interativos**: Selecione o ano e o mês para visualizar dados específicos.
+- **Tabela**: Dados das vendas são exibidos em uma tabela interativa.
+- **Gráfico**: Um gráfico de barras mostra o total de vendas por mês.
+- **Exportação**: Baixe os dados filtrados em formato Excel.
+
+### 📂 Estrutura de Arquivos
+
+- `app.py`: Arquivo principal com a lógica do Streamlit.
+- `requirements.txt`: Lista de dependências.
+- `.env`: Arquivo para configurar o banco de dados.
