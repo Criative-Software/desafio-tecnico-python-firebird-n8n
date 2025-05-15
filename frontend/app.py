@@ -2,9 +2,6 @@ from flask import Flask, render_template, request, send_file
 import fdb
 import pandas as pd
 import io
-from datetime import datetime
-import calendar
-import os
 
 MESES_PT = {
         1: 'Janeiro', 2: 'Fevereiro', 3: 'Março',
