@@ -5,8 +5,7 @@
 ```bash
 docker-compose up -d
 ```
-
-O banco de dados estará disponível na porta 3050.
+O banco de dados será iniciado em um container Docker. O banco de dados padrão é o `employee` e o usuário e senha são `sysdba` e `masterkey`, respectivamente. O banco de dados estará disponível na porta 3050.
 
 2. Execute:
 
