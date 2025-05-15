@@ -1,0 +1,30 @@
+services:
+  n8n:
+    image: n8nio/n8n
+    ports:
+      - "5678:5678"
+    volumes:
+      - ./:/home/node/.n8n
+    environment:
+      GENERIC_TIMEZONE: America/Sao_Paulo
+    restart: unless-stopped
+    networks:
+      - n8n-networks
+
+  firebird_n8n:
+    image: jacobalberty/firebird:2.5.9-sc
+    restart: always
+    container_name: desafio_tecnico_firebird_n8n
+    environment:
+      FIREBIRD_USER: sysdba
+      ISC_PASSWORD: masterkey
+    ports:
+      - "3052:3050"
+    volumes:
+      - ./data:/firebird/data
+    networks:
+      - n8n-networks
+
+networks:
+  n8n-networks:
+    driver: bridge
