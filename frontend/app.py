@@ -6,6 +6,13 @@ from datetime import datetime
 import calendar
 import os
 
+MESES_PT = {
+        1: 'Janeiro', 2: 'Fevereiro', 3: 'Março',
+        4: 'Abril', 5: 'Maio', 6: 'Junho',
+        7: 'Julho', 8: 'Agosto', 9: 'Setembro',
+        10: 'Outubro', 11: 'Novembro', 12: 'Dezembro'
+}
+
 app = Flask(__name__)
 
 def db_connection():
@@ -31,56 +38,39 @@ def db_connection():
     except fdb.Error as e:
         raise ConnectionError(f"Erro ao conectar ao banco de dados: {str(e)}")
 
-def get_available_months():
+def get_available_years():
     con, cur = db_connection()
     try:
         cur.execute("""
-            SELECT DISTINCT EXTRACT(YEAR FROM ORDER_DATE) AS ANO, 
-                           EXTRACT(MONTH FROM ORDER_DATE) AS MES 
+            SELECT DISTINCT EXTRACT(YEAR FROM ORDER_DATE) AS ANO
             FROM SALES 
-            ORDER BY ANO DESC, MES DESC
+            ORDER BY ANO DESC
         """)
         results = cur.fetchall()
        
-        months_years = []
-        for row in results:
-            year, month = int(row[0]), int(row[1])
-            month_name = calendar.month_name[month]
-            months_years.append({
-                'value': f"{year}-{month:02d}",
-                'display': f"{month_name} {year}"
-            })
-        return months_years
+        years = [int(row[0]) for row in results]
+
+        return years
+    
     except Exception as e:
-        print(f"Erro ao obter meses disponíveis: {str(e)}")
-        current_date = datetime.now()
-        months_years = []
-        for i in range(12):
-            year = current_date.year
-            month = current_date.month - i
-            if month <= 0:
-                month += 12
-                year -= 1
-            month_name = calendar.month_name[month]
-            months_years.append({
-                'value': f"{year}-{month:02d}",
-                'display': f"{month_name} {year}"
-            })
-        return months_years
+        print(f"Erro ao obter anos disponíveis: {str(e)}")
+        
     finally:
         con.close()
 
-def sales_by_month(year_month):
-    year, month = map(int, year_month.split('-'))
+def get_all_months():
+    return [{'value': i, 'display': MESES_PT[i]} for i in range(1, 13)]
+
+def get_sales_by_month_year(year, month):
     con, cur = db_connection()
     try:
         cur.execute("""
             SELECT
-                S.PO_NUMBER
+                S.PO_NUMBER,
                 S.ORDER_DATE,
                 C.CONTACT_FIRST AS CLIENT,
                 S.QTY_ORDERED,
-                S.TOTAL_VALUE,
+                S.TOTAL_VALUE
             FROM
                 SALES S
             JOIN
@@ -103,35 +93,54 @@ def sales_by_month(year_month):
             sales_data.append(sale)
             
         return sales_data, columns
+    
+    except Exception as e:
+        app.logger.error(f"Erro ao buscar vendas: {str(e)}")
+        return [], []
     finally:
         con.close()
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    available_months = get_available_months()
-    selected_month = request.form.get('month') if request.method == 'POST' else None
+    available_years = get_available_years()
+    available_months = get_all_months()    
+    selected_year = None
+    selected_month = None
+    sales_data = []
+    columns = []
     
-    if selected_month:
-        sales_data, columns = sales_by_month(selected_month)
-    else:
-        sales_data, columns = [], []
+    if request.method == 'POST':
+        selected_year = request.form.get('year')
+        selected_month = request.form.get('month')
+        
+        if selected_year and selected_month:
+            selected_year = int(selected_year)
+            selected_month = int(selected_month)
+            sales_data, columns = get_sales_by_month_year(selected_year, selected_month)
     
-    return render_template('./index.html', 
+    return render_template('index.html', 
+                          available_years=available_years,
                           available_months=available_months,
+                          selected_year=selected_year,
                           selected_month=selected_month,
                           sales_data=sales_data,
                           columns=columns)
 
+
 @app.route('/export', methods=['POST'])
 def export_excel():
+    selected_year = request.form.get('year')
     selected_month = request.form.get('month')
-    if not selected_month:
-        return "Mês não selecionado", 400
     
-    sales_data, columns = sales_by_month(selected_month)
+    if not selected_year or not selected_month:
+        return "Mês e ano não selecionados", 400
+    
+    selected_year = int(selected_year)
+    selected_month = int(selected_month)
+    sales_data, columns = get_sales_by_month_year(selected_year, selected_month)
     
     df = pd.DataFrame(sales_data)
-    
+
     output = io.BytesIO()
     
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
@@ -144,9 +153,8 @@ def export_excel():
     
     output.seek(0)
     
-    year, month = selected_month.split('-')
-    month_name = calendar.month_name[int(month)]
-    filename = f"vendas_{month_name}_{year}.xlsx"
+    month_name = MESES_PT[selected_month]
+    filename = f"vendas_{month_name.lower()}_{selected_year}.xlsx"
     
     return send_file(
         output,

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Consulta de Vendas</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='../icon/analise-de-dados.png') }}">
     <style>
         * {
             margin: 0;
@@ -51,7 +52,6 @@
             border-radius: 5px;
             margin-bottom: 30px;
             display: flex;
-            align-items: center;
             flex-wrap: wrap;
             gap: 15px;
         }
@@ -59,6 +59,8 @@
         .form-group {
             flex: 1;
             min-width: 250px;
+            
+
         }
         
         label {
@@ -85,11 +87,14 @@
             font-weight: 600;
             transition: background-color 0.2s;
             font-size: 14px;
+
         }
         
         .btn-primary {
             background-color: #3498db;
             color: white;
+            align-items: center;
+            justify-self: center;
         }
         
         .btn-primary:hover {
@@ -114,7 +119,7 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 14px;
-        }
+        }   
         
         th {
             background-color: #34495e;
@@ -149,26 +154,8 @@
             font-size: 40px;
             margin-bottom: 15px;
             display: block;
-        }
-        
-        @media (max-width: 768px) {
-            .filter-section {
-                flex-direction: column;
-            }
-            
-            .form-group, .btn {
-                width: 100%;
-            }
-            
-            h1 {
-                font-size: 20px;
-            }
-            
-            .subtitle {
-                font-size: 14px;
-            }
-        }
-        
+        }        
+               
         .summary {
             margin-top: 20px;
             padding: 15px;
@@ -198,26 +185,39 @@
             color: #7f8c8d;
         }
     </style>
-</head>
+    </head>
 <body>
     <div class="container">
         <header>
             <h1>Sistema de Consulta de Vendas</h1>
-            <p class="subtitle">Visualize e exporte dados de vendas por período</p>
+            <p class="subtitle">Visualize e exporte os seus dados de vendas por período</p>
         </header>
         
         <section class="filter-section">
             <form id="searchForm" method="post" action="{{ url_for('index') }}">
-                <div class="form-group">
-                    <label for="month">Selecione o Mês/Ano:</label>
-                    <select id="month" name="month" required>
-                        <option value="">Selecione...</option>
-                        {% for month in available_months %}
-                            <option value="{{ month.value }}" {% if month.value == selected_month %}selected{% endif %}>
-                                {{ month.display }}
-                            </option>
-                        {% endfor %}
-                    </select>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <div class="form-group" style="flex: 1; min-width: 150px;">
+                        <label for="month">Selecione o Mês:</label>
+                        <select id="month" name="month" required>
+                            <option value="">Selecione o mês...</option>
+                            {% for month in available_months %}
+                                <option value="{{ month.value }}" {% if month.value == selected_month %}selected{% endif %}>
+                                    {{ month.display }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex: 1; min-width: 150px;">
+                        <label for="year">Selecione o Ano:</label>
+                        <select id="year" name="year" required>
+                            <option value="">Selecione o ano...</option>
+                            {% for year in available_years %}
+                                <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>
+                                    {{ year }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
                 </div>
                 <button type="submit" class="btn btn-primary" id="searchBtn" style="margin-top: 25px;">
                     Buscar Vendas
@@ -225,7 +225,7 @@
             </form>
         </section>
         
-        {% if selected_month %}
+        {% if selected_month and selected_year %}
             {% if sales_data %}
                 <div class="table-container">
                     <table>
@@ -261,6 +261,7 @@
                         Total de registros: {{ sales_data|length }}
                     </div>
                     <form class="export-form" method="post" action="{{ url_for('export_excel') }}">
+                        <input type="hidden" name="year" value="{{ selected_year }}">
                         <input type="hidden" name="month" value="{{ selected_month }}">
                         <button type="submit" class="btn btn-success">
                             Exportar para Excel
@@ -274,7 +275,7 @@
             {% endif %}
         {% else %}
             <div class="empty-state">
-                <p>Selecione um mês para visualizar as vendas.</p>
+                <p>Selecione o mês e o ano para visualizar as vendas.</p>
             </div>
         {% endif %}
         
