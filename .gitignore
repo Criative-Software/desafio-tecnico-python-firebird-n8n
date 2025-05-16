@@ -3,3 +3,4 @@
 firebird*
 venv
 *_data
+*.fbk
