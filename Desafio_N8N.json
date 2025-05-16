@@ -1,0 +1,152 @@
+{
+  "name": "Desafio N8N",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "teste",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -360,
+        280
+      ],
+      "id": "2aeacb12-a057-4053-a5ba-6fb4b493a7d9",
+      "name": "Webhook",
+      "webhookId": "0c3081cb-3de7-4587-af11-972d0547b3aa"
+    },
+    {
+      "parameters": {
+        "sendTo": "leandrohbastos+N8N@gmail.com",
+        "subject": "Envio de e-mail do desafio (Leandro Bastos)",
+        "emailType": "text",
+        "message": "=Dados inseridos com sucesso.\n{{ $('Code').item.json.vendedor }}\n{{ $('Code').item.json.total }}",
+        "options": {
+          "appendAttribution": true
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        520,
+        280
+      ],
+      "id": "6b7ebf1e-4b44-4b12-a517-acf6df4ce6b6",
+      "name": "Gmail",
+      "webhookId": "a77cd6a3-51d3-441e-97a2-75edf40d80a9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "AdIdd2DKx0gxouri",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "table": "csv_import",
+        "columns": "vendedor,total"
+      },
+      "type": "n8n-nodes-firebird.firebird",
+      "typeVersion": 1,
+      "position": [
+        320,
+        280
+      ],
+      "id": "616f7101-90ac-460d-8ccd-e64e392abfcf",
+      "name": "Firebird",
+      "credentials": {
+        "firebirdApi": {
+          "id": "sJmT79r0gDIcVFdc",
+          "name": "Firebird account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "binaryPropertyName": "file",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        280
+      ],
+      "id": "2d8f609e-4f5e-4c1d-a12c-e48d9dcf593d",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  return {\n    json: {\n      vendedor: item.json.vendedor,\n      total: parseFloat(item.json.total.replace(',', '.'))\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        100,
+        280
+      ],
+      "id": "78ecf94e-7fec-4322-bacd-5abf664a7876",
+      "name": "Code"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Firebird",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Firebird": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "a50ee400-c48a-4664-a60f-33ab3ede9def",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b8c79952268f02fd335037ae1935631792300e38348386c3684985d16ed8944a"
+  },
+  "id": "K9EIN4PdKuxpREyP",
+  "tags": []
+}
