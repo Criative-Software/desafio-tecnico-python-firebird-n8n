@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  firebird:
+    image: jacobalberty/firebird:2.5-ss
+    container_name: firebird25
+    ports:
+      - "3050:3050"
+    environment:
+      - ISC_PASSWORD=masterkey
+    volumes:
+      - ./firebird_data:/firebird/data
+      - ./employee.fbk:/firebird/employee.fbk
+    restart: unless-stopped

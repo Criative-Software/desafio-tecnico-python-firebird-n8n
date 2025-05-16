@@ -1,0 +1,153 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "upload-csv",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -20,
+        0
+      ],
+      "id": "09188ba2-b24f-4491-ada9-0481d7ef0306",
+      "name": "Webhook",
+      "webhookId": "ccfe686d-ed73-4567-96e2-3d3257598152"
+    },
+    {
+      "parameters": {
+        "options": {
+          "delimiter": ","
+        }
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        200,
+        0
+      ],
+      "id": "cae539b8-3fdb-450b-9435-bd8b9179abaf",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "jsCode": "const records = $input.all();\nconst record = records[0]; \nif (record == undefined){\n  return [{json: {error: \"Nenhum dado\"}}]; \n}\n\nconst now = new Date();\nconst dateTimeStr = now.toLocaleString('pt-BR');\n\nconst columns = Object.keys(record.json);\nconst columnsStr = columns.map(col => `\"${col}\"`).join(', ');\n\nlet selectParts = [''];\nselectParts.pop();\n\nrecords.forEach(record => {\n  const values = columns.map(col => {\n    const value = record.json[col];\n    if (value === undefined || value === null) {\n      return 'NULL';\n    } else if (!isNaN(value) && value !== '') {\n      return value;\n    } else {\n      return `'${value.replace(/'/g, \"''\")}'`;\n    }\n  });\n  \n  selectParts.push(`SELECT ${values.join(', ')} FROM RDB$DATABASE`);\n});\n\nconst insertSql = `INSERT INTO CSV_IMPORT (${columnsStr})${selectParts.join(' UNION ALL ')}`;\n\nconsole.log(\"SQL gerado:\", insertSql);\n\nreturn [{\n  json: {\n    sqlQuery: insertSql,\n    recordCount: records.length,\n    date: dateTimeStr\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        420,
+        0
+      ],
+      "id": "7d8ceb15-9414-47d4-b6ff-ac5b07e798b3",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ $json.sqlQuery }}"
+      },
+      "type": "n8n-nodes-firebird.firebird",
+      "typeVersion": 1,
+      "position": [
+        640,
+        -160
+      ],
+      "id": "3aeb1f41-4413-44e8-8b72-13e6cca94345",
+      "name": "Firebird",
+      "alwaysOutputData": false,
+      "notesInFlow": false,
+      "credentials": {
+        "firebirdApi": {
+          "id": "LGrnPK8gca3GYhNW",
+          "name": "Firebird account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "sistema@empresa.com",
+        "toEmail": " processo@empresa.com",
+        "subject": "=[n8n] Fluxo Concluído",
+        "text": "=Olá,\n\nO recebimento, importação e salvamento do arquivo foi concluída com sucesso.\n\nDetalhes do processamento:\n- Total de registros processados: {{ $json.recordCount }}\n- Data/hora do processamento: {{ $json.date }}\n\nOs dados foram inseridos com sucesso na tabela csv_import do banco de dados Firebird.\n\nAtenciosamente,\nn8n",
+        "options": {}
+      },
+      "name": "Enviar Email de Confirmação",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [
+        640,
+        40
+      ],
+      "id": "4d996a3b-8b36-460d-858d-a8fda787e314",
+      "executeOnce": false,
+      "notesInFlow": false,
+      "credentials": {
+        "smtp": {
+          "id": "fwuvPFdScUgb933v",
+          "name": "SMTP account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Firebird",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Enviar Email de Confirmação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Firebird": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "54b32089-f0cd-4444-abb1-05b99ccea813",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bc68259c1ef723b736d8523375b49bed13fcf7985efa2cadc7be6bbece9eb5c3"
+  },
+  "id": "wb88NyaHwouIetU7",
+  "tags": []
+}

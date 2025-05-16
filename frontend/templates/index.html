@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Consulta de Vendas</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='icon/analise-de-dados.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style/index.style.css') }}">
+    </head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Sistema de Consulta de Vendas</h1>
+            <p class="subtitle">Visualize e exporte os seus dados de vendas por período</p>
+        </header>
+        
+        <section class="filter-section">
+            <form id="searchForm" method="post" action="{{ url_for('index') }}">
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <div class="form-group" style="flex: 1; min-width: 150px;">
+                        <label for="month">Selecione o Mês:</label>
+                        <select id="month" name="month" required>
+                            <option value="">Selecione o mês...</option>
+                            {% for month in available_months %}
+                                <option value="{{ month.value }}" {% if month.value == selected_month %}selected{% endif %}>
+                                    {{ month.display }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex: 1; min-width: 150px;">
+                        <label for="year">Selecione o Ano:</label>
+                        <select id="year" name="year" required>
+                            <option value="">Selecione o ano...</option>
+                            {% for year in available_years %}
+                                <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>
+                                    {{ year }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" id="searchBtn" style="margin-top: 25px;">
+                    Buscar Vendas
+                </button>
+            </form>
+        </section>
+        
+        {% if selected_month and selected_year %}
+            {% if sales_data %}
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                {% for column in columns %}
+                                    <th>{{ column }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sale in sales_data %}
+                                <tr>
+                                    {% for column in columns %}
+                                        <td>
+                                            {% if column == 'DATA_VENDA' %}
+                                                {{ sale[column]|string|truncate(10, True, '') }}
+                                            {% elif 'VALOR' in column %}
+                                                R$ {{ "%.2f"|format(sale[column]) }}
+                                            {% else %}
+                                                {{ sale[column] }}
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="summary">
+                    <div class="total">
+                        Total de registros: {{ sales_data|length }}
+                    </div>
+                    <form class="export-form" method="post" action="{{ url_for('export_excel') }}">
+                        <input type="hidden" name="year" value="{{ selected_year }}">
+                        <input type="hidden" name="month" value="{{ selected_month }}">
+                        <button type="submit" class="btn btn-success">
+                            Exportar para Excel
+                        </button>
+                    </form>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p>Nenhuma venda encontrada para o período selecionado.</p>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="empty-state">
+                <p>Selecione o mês e o ano para visualizar as vendas.</p>
+            </div>
+        {% endif %}
+        
+        <div class="loading" id="loading">Carregando dados, aguarde...</div>
+    </div>
+
+    <script>
+        document.getElementById('searchForm').addEventListener('submit', function() {
+            document.getElementById('loading').style.display = 'block';
+        });
+    </script>
+</body>
+</html>

@@ -1,2 +1,6 @@
 .idea
 .vscode
+firebird*
+venv
+*_data
+*.fbk
